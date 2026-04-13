@@ -1,0 +1,13 @@
+{
+  "crons": [
+    {
+      "path": "/api/tick",
+      "schedule": "* * * * *"
+    }
+  ],
+  "rewrites": [
+    { "source": "/style.css", "destination": "/public/style.css" },
+    { "source": "/app.js", "destination": "/public/app.js" },
+    { "source": "/((?!api/).*)", "destination": "/public/index.html" }
+  ]
+}
