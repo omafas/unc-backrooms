@@ -195,17 +195,17 @@ async function loadLiveFeed() {
     .from('messages')
     .select('*')
     .eq('conversation_id', conv.id)
-    .order('created_at', { ascending: true })
+    .order('created_at', { ascending: false })
     .limit(100);
 
   feedEl.innerHTML = '';
   if (messages) {
+    // Reverse so oldest is at bottom, newest at top
     messages.forEach(msg => {
       feedEl.appendChild(createMessageEl(msg));
     });
     messageCount = messages.length;
     document.getElementById('msg-count').textContent = messageCount;
-    feedEl.scrollTop = feedEl.scrollHeight;
   }
 
   subscribeToMessages(conv.id, feedEl);
@@ -220,10 +220,9 @@ function subscribeToMessages(convId, feedEl) {
       { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${convId}` },
       (payload) => {
         const msg = payload.new;
-        feedEl.appendChild(createMessageEl(msg));
+        feedEl.prepend(createMessageEl(msg));
         messageCount++;
         document.getElementById('msg-count').textContent = messageCount;
-        feedEl.scrollTop = feedEl.scrollHeight;
       }
     )
     .subscribe();
