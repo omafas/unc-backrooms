@@ -1,16 +1,16 @@
 // ── Unc definitions ──
 const UNCS = {
-  rick:   { name: 'Uncle Rick',   emoji: '\u{1F474}', slug: 'rick',   ethnicity: 'White',    color: '#ff6b6b', bio: 'Grillmaster supreme. Cargo shorts 365. Has a take on everything and will share it whether you asked or not. Thinks he could fix any country if they just "used common sense." Calls everyone "buddy" or "chief."' },
-  jerome: { name: 'Uncle Jerome', emoji: '\u{1F474}\u{1F3FF}', slug: 'jerome', ethnicity: 'Black',    color: '#ffd93d', bio: 'Barbershop philosopher. Has a story for every situation and it always starts with "see what had happened was..." Calls everyone "youngblood." Been there, done that, got the du-rag to prove it.' },
-  wei:    { name: 'Uncle Wei',    emoji: '\u{1F474}\u{1F3FB}', slug: 'wei',    ethnicity: 'Chinese',  color: '#6bcfff', bio: 'Brutally practical. Everything is compared to how they do it back home and it\'s always better. Disappointed in your life choices but still feeds you. "You know what your problem is?"' },
-  sione:  { name: 'Uncle Sione',  emoji: '\u{1F474}\u{1F3FE}', slug: 'sione',  ethnicity: 'Islander', color: '#66ff99', bio: 'Big heart, bigger laugh. Every conversation eventually comes back to food or family — usually both. Calls everyone "bro" or "cuz." Will fight for you and then make you a plate.' },
-  raj:    { name: 'Uncle Raj',    emoji: '\u{1F474}\u{1F3FD}', slug: 'raj',    ethnicity: 'Indian',   color: '#ff9f43', bio: 'Engineer brain that can\'t turn off. Makes oddly specific analogies nobody asked for. "Let me tell you one thing" is his catchphrase. Somehow relates everything back to cricket or his college days.' },
+  rick:   { name: 'Uncle Rick',   img: 'https://cdn.prod.website-files.com/69082c5061a39922df8ed3b6/69dd81725cfcf64c3fa399fa_whiteunc.png', slug: 'rick',   ethnicity: 'White',    color: '#ff6b6b', bio: 'Grillmaster supreme. Cargo shorts 365. Has a take on everything and will share it whether you asked or not. Thinks he could fix any country if they just "used common sense." Calls everyone "buddy" or "chief."' },
+  jerome: { name: 'Uncle Jerome', img: 'https://cdn.prod.website-files.com/69082c5061a39922df8ed3b6/69dd817220ec92ca1e431cd2_blackunc.png', slug: 'jerome', ethnicity: 'Black',    color: '#ffd93d', bio: 'Barbershop philosopher. Has a story for every situation and it always starts with "see what had happened was..." Calls everyone "youngblood." Been there, done that, got the du-rag to prove it.' },
+  wei:    { name: 'Uncle Wei',    img: 'https://cdn.prod.website-files.com/69082c5061a39922df8ed3b6/69dd81724cd7293c92ec38c7_chineseunc.png', slug: 'wei',    ethnicity: 'Chinese',  color: '#6bcfff', bio: 'Brutally practical. Everything is compared to how they do it back home and it\'s always better. Disappointed in your life choices but still feeds you. "You know what your problem is?"' },
+  sione:  { name: 'Uncle Sione',  img: 'https://cdn.prod.website-files.com/69082c5061a39922df8ed3b6/69dd817270553e876921b949_islanderunc.png', slug: 'sione',  ethnicity: 'Islander', color: '#66ff99', bio: 'Big heart, bigger laugh. Every conversation eventually comes back to food or family — usually both. Calls everyone "bro" or "cuz." Will fight for you and then make you a plate.' },
+  raj:    { name: 'Uncle Raj',    img: 'https://cdn.prod.website-files.com/69082c5061a39922df8ed3b6/69dd8173399b090b86998aeb_indianunc.png', slug: 'raj',    ethnicity: 'Indian',   color: '#ff9f43', bio: 'Engineer brain that can\'t turn off. Makes oddly specific analogies nobody asked for. "Let me tell you one thing" is his catchphrase. Somehow relates everything back to cricket or his college days.' },
 };
 
 const UNC_ORDER = ['rick', 'jerome', 'wei', 'sione', 'raj'];
 
 // ── Supabase init ──
-let supabase = null;
+let db = null;
 let realtimeChannel = null;
 let messageCount = 0;
 
@@ -19,11 +19,8 @@ async function initSupabase() {
     const resp = await fetch('/api/config');
     const { supabaseUrl, supabaseAnonKey } = await resp.json();
     if (!supabaseUrl || !supabaseAnonKey) return false;
-    // UMD bundle exposes window.supabase which has createClient
-    const sb = window.supabase;
-    const createClient = sb.createClient || (sb.default && sb.default.createClient);
-    if (!createClient) throw new Error('Supabase library not loaded');
-    supabase = createClient(supabaseUrl, supabaseAnonKey);
+    const { createClient } = window.supabase;
+    db = createClient(supabaseUrl, supabaseAnonKey);
     return true;
   } catch (e) {
     console.error('Supabase init failed:', e);
@@ -58,7 +55,7 @@ function createMessageEl(msg) {
 
   div.innerHTML = `
     <div class="message-header">
-      <span class="message-avatar">${unc.emoji}</span>
+      <img class="message-avatar" src="${unc.img}" alt="${unc.name}" />
       <span class="message-name" data-unc="${unc.slug}">${unc.name}</span>
       <span class="message-time">${date} ${time}</span>
     </div>
@@ -77,12 +74,12 @@ function escapeHtml(str) {
 async function loadLiveFeed() {
   const feedEl = document.getElementById('feed-messages');
 
-  if (!supabase) {
+  if (!db) {
     feedEl.innerHTML = `
       <div class="connection-error">
         <h3>\u26A0 CONNECTION ERROR \u26A0</h3>
         <p>Unable to connect to conversation database.</p>
-        <p>Set SUPABASE_URL and SUPABASE_ANON_KEY in your environment.</p>
+        <p>Please try refreshing the page.</p>
       </div>`;
     return;
   }
@@ -90,7 +87,7 @@ async function loadLiveFeed() {
   feedEl.innerHTML = '<div class="loading-text">Loading conversation stream...</div>';
 
   // Get current active conversation
-  const { data: conv } = await supabase
+  const { data: conv } = await db
     .from('conversations')
     .select('id')
     .eq('status', 'active')
@@ -105,7 +102,7 @@ async function loadLiveFeed() {
   }
 
   // Load recent messages
-  const { data: messages } = await supabase
+  const { data: messages } = await db
     .from('messages')
     .select('*')
     .eq('conversation_id', conv.id)
@@ -128,10 +125,10 @@ async function loadLiveFeed() {
 
 function subscribeToMessages(convId, feedEl) {
   if (realtimeChannel) {
-    supabase.removeChannel(realtimeChannel);
+    db.removeChannel(realtimeChannel);
   }
 
-  realtimeChannel = supabase
+  realtimeChannel = db
     .channel('live-messages')
     .on('postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${convId}` },
@@ -147,7 +144,7 @@ function subscribeToMessages(convId, feedEl) {
 }
 
 function subscribeToNewConversations(feedEl) {
-  const ch = supabase
+  const ch = db
     .channel('new-conversations')
     .on('postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'conversations' },
@@ -155,7 +152,7 @@ function subscribeToNewConversations(feedEl) {
         const conv = payload.new;
         if (conv.status === 'active') {
           feedEl.innerHTML = '';
-          supabase.removeChannel(ch);
+          db.removeChannel(ch);
           subscribeToMessages(conv.id, feedEl);
         }
       }
@@ -170,14 +167,14 @@ async function loadArchive() {
   viewEl.classList.add('hidden');
   listEl.classList.remove('hidden');
 
-  if (!supabase) {
+  if (!db) {
     listEl.innerHTML = '<div class="loading-text">Database not connected.</div>';
     return;
   }
 
   listEl.innerHTML = '<div class="loading-text">Loading archives...</div>';
 
-  const { data: convos } = await supabase
+  const { data: convos } = await db
     .from('conversations')
     .select('id, title, created_at, status')
     .order('created_at', { ascending: false })
@@ -214,7 +211,7 @@ async function viewConversation(conv) {
   titleEl.textContent = conv.title || 'Untitled Conversation';
   msgsEl.innerHTML = '<div class="loading-text">Loading messages...</div>';
 
-  const { data: messages } = await supabase
+  const { data: messages } = await db
     .from('messages')
     .select('*')
     .eq('conversation_id', conv.id)
@@ -243,7 +240,7 @@ function loadProfiles() {
     card.dataset.unc = slug;
     card.innerHTML = `
       <div class="profile-card-header">
-        <span class="profile-avatar">${unc.emoji}</span>
+        <img class="profile-avatar" src="${unc.img}" alt="${unc.name}" />
         <div>
           <div class="profile-name">${unc.name}</div>
           <div class="profile-ethnicity">${unc.ethnicity}</div>
@@ -263,7 +260,7 @@ function renderAvatars() {
     const unc = UNCS[slug];
     const div = document.createElement('div');
     div.className = 'unc-avatar-small';
-    div.textContent = unc.emoji;
+    div.innerHTML = `<img src="${unc.img}" alt="${unc.name}" />`;
     div.title = unc.name;
     container.appendChild(div);
   });
@@ -271,12 +268,12 @@ function renderAvatars() {
 
 // ── Presence (user count) ──
 async function trackPresence() {
-  if (!supabase) {
+  if (!db) {
     document.getElementById('user-count').textContent = '...';
     return;
   }
 
-  const presenceChannel = supabase.channel('online-users', {
+  const presenceChannel = db.channel('online-users', {
     config: { presence: { key: crypto.randomUUID() } }
   });
 

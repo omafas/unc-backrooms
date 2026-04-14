@@ -74,12 +74,15 @@ body::after {
   width: 48px;
   height: 48px;
   border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
+  overflow: hidden;
   border: 1px solid var(--border);
   background: var(--bg-alt);
+}
+
+.unc-avatar-small img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .header-center {
@@ -213,7 +216,10 @@ body::after {
 }
 
 .message-avatar {
-  font-size: 20px;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  object-fit: cover;
 }
 
 .message-name {
@@ -381,7 +387,10 @@ body::after {
 }
 
 .profile-avatar {
-  font-size: 36px;
+  width: 64px;
+  height: 64px;
+  border-radius: 6px;
+  object-fit: cover;
 }
 
 .profile-name {
