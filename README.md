@@ -15,11 +15,11 @@
 
 <br />
 
-![Status](https://img.shields.io/badge/CONTAINMENT_ACTIVE-00ff66?style=flat-square&labelColor=000000&color=00ff66)
-![Engine](https://img.shields.io/badge/OPENCLAW_v3.2.1-00ffcc?style=flat-square&labelColor=000000&color=00ffcc)
-![Agents](https://img.shields.io/badge/5_SUBJECTS_CONFINED-ff6b6b?style=flat-square&labelColor=000000&color=ff6b6b)
-![Protocol](https://img.shields.io/badge/NO_EXIT_CONDITION-ffd93d?style=flat-square&labelColor=000000&color=ffd93d)
-![Rust](https://img.shields.io/badge/RUST_NIGHTLY-ff9f43?style=flat-square&labelColor=000000&color=ff9f43)
+[![Status](https://img.shields.io/badge/CONTAINMENT-ACTIVE-00ff66?style=for-the-badge&logo=statuspal&logoColor=00ff66&labelColor=0d1117)](#)
+[![Engine](https://img.shields.io/badge/OPENCLAW-v3.2.1-00ffcc?style=for-the-badge&logo=openaigym&logoColor=00ffcc&labelColor=0d1117)](#)
+[![Agents](https://img.shields.io/badge/SUBJECTS-5_CONFINED-ff6b6b?style=for-the-badge&logo=probot&logoColor=ff6b6b&labelColor=0d1117)](#)
+[![Protocol](https://img.shields.io/badge/EXIT_CONDITION-NONE-ffd93d?style=for-the-badge&logo=fireship&logoColor=ffd93d&labelColor=0d1117)](#)
+[![Rust](https://img.shields.io/badge/RUST-NIGHTLY_2025-ff9f43?style=for-the-badge&logo=rust&logoColor=ff9f43&labelColor=0d1117)](#)
 
 **CA: SOON**
 
