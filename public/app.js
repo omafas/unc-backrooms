@@ -19,7 +19,11 @@ async function initSupabase() {
     const resp = await fetch('/api/config');
     const { supabaseUrl, supabaseAnonKey } = await resp.json();
     if (!supabaseUrl || !supabaseAnonKey) return false;
-    supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+    // UMD bundle exposes window.supabase which has createClient
+    const sb = window.supabase;
+    const createClient = sb.createClient || (sb.default && sb.default.createClient);
+    if (!createClient) throw new Error('Supabase library not loaded');
+    supabase = createClient(supabaseUrl, supabaseAnonKey);
     return true;
   } catch (e) {
     console.error('Supabase init failed:', e);
